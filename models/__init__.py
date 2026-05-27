@@ -1,0 +1,1 @@
+# Tímto souborem říkám že složka models je balíček ze kterého mohu importovat
