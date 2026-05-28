@@ -28,7 +28,7 @@ class ClientService:
 
         self.validate_client(client)
         client_id = self.client_repository.create_client(client)
-        logger.info(f"Klient vytvořen | id={client_id} name={client.name}")
+        logger.info("Klient vytvořen | id=%d name=%s", client_id, client.name)
         return client_id
     
     def list_clients(self) -> list[Client]:
@@ -47,4 +47,4 @@ class ClientService:
         self.get_client_by_id(client_id)
         self.client_repository.delete_client(client_id)
 
-        logger.info(f"Klient s id={client_id} byl smazán.")
+        logger.info("Klient s id=%d byl smazán.", client_id)

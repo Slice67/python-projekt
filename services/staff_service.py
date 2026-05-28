@@ -27,7 +27,7 @@ class StaffService:
 
         self.validate_staff(staff)
         staff_id = self.staff_repository.create_staff(staff)
-        logger.info(f"Zaměstnanec vytvořen | id={staff_id} name={staff.name}")
+        logger.info("Zaměstnanec vytvořen | id=%d name=%s", staff_id, staff.name)
         return staff_id
 
     def list_staff(self) -> list[Staff]:
@@ -46,4 +46,4 @@ class StaffService:
         self.get_staff_by_id(staff_id)
         self.staff_repository.delete_staff(staff_id)
 
-        logger.info(f"Zaměstnanec s id={staff_id} byl smazán.")
+        logger.info("Zaměstnanec s id=%d byl smazán.", staff_id)

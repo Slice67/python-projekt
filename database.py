@@ -44,3 +44,13 @@ class Database:
                     email TEXT
                     )
                 """)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS programs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    program_type TEXT NOT NULL,
+                    duration_minutes INTEGER NOT NULL,
+                    recommended_age TEXT,
+                    description TEXT
+                    )
+                """)
