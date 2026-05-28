@@ -74,10 +74,10 @@ class ClientRepository:
         """Smaže klienta z db podle jeho ID"""
         with self.database.connect() as conn:
             conn.execute("""
-                        DELETE FROM clients 
-                        WHERE id = ?
-                        """,
-                        (client_id,)) # Tuple s jedním prvkem musí mít čárku
+                DELETE FROM clients 
+                WHERE id = ?
+                """,
+                (client_id,)) # Tuple s jedním prvkem musí mít čárku
 
     # -------------------------------------------GET BY ID---------------------------------------------------------
     def get_client_by_id(self, client_id: int) -> Client | None: # Vrátí klienta podle ID nebo None pokud neexistuje

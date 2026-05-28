@@ -15,16 +15,24 @@ class Database:
     def initialize(self): # Vytvoří tabulku pro klienty, pokud neexistuje
         with self.connect() as conn:
             conn.execute("""
-                    CREATE TABLE IF NOT EXISTS clients (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        name TEXT NOT NULL,
-                        client_type TEXT NOT NULL,
-                        contact_person TEXT,
-                        email TEXT,
-                        phone TEXT,
-                        street TEXT,
-                        city TEXT,
-                        postal_code TEXT,
-                        note TEXT
+                CREATE TABLE IF NOT EXISTS clients (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    client_type TEXT NOT NULL,
+                    contact_person TEXT,
+                    email TEXT,
+                    phone TEXT,
+                    street TEXT,
+                    city TEXT,
+                    postal_code TEXT,
+                    note TEXT
                     )
-                    """)
+                """)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS rooms (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    capacity INTEGER NOT NULL,
+                    description TEXT     
+                    )    
+                """)
