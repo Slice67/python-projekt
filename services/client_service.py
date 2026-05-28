@@ -28,7 +28,7 @@ class ClientService:
 
         self.validate_client(client)
         client_id = self.client_repository.create_client(client)
-        logger.info("Klient vytvořen | id=%s name=%s", client_id, client.name)
+        logger.info(f"Klient vytvořen | id={client_id} name={client.name}")
         return client_id
     
     def list_clients(self) -> list[Client]:
@@ -39,7 +39,7 @@ class ClientService:
         """Vrátí klienta podle ID nebo vyhodí výjimku, pokud neexistuje"""
         client = self.client_repository.get_client_by_id(client_id)
         if client is None:
-            raise ValueError("Klient s id=%s neexistuje.", client_id)
+            raise ValueError(f"Klient s id={client_id} neexistuje.")
         return client
     
     def delete_client(self, client_id: int) -> None:
@@ -47,4 +47,4 @@ class ClientService:
         self.get_client_by_id(client_id)
         self.client_repository.delete_client(client_id)
 
-        logger.info("Klient s id=%s byl smazán.", client_id)
+        logger.info(f"Klient s id={client_id} byl smazán.")

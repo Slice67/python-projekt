@@ -24,7 +24,7 @@ class RoomService:
 
         self.validate_room(room)
         room_id = self.room_repository.create_room(room)
-        logger.info("Místnost vytvořena | id=%s name=%s", room_id, room.name)
+        logger.info(f"Místnost vytvořena | id={room_id} name={room.name}")
         return room_id
     
     def list_rooms(self) -> list[Room]:
@@ -35,7 +35,7 @@ class RoomService:
         """Vrátí místnost podle ID nebo vyhodí výjimku, pokud neexistuje"""
         room = self.room_repository.get_room_by_id(room_id)
         if room is None:
-            raise ValueError("Místnost s id=%s neexistuje.", room_id)
+            raise ValueError(f"Místnost s id={room_id} neexistuje.")
         return room
     
     def delete_room(self, room_id: int) -> None:
@@ -43,4 +43,4 @@ class RoomService:
         self.get_room_by_id(room_id)
         self.room_repository.delete_room(room_id)
 
-        logger.info("Místnost s id=%s byla smazána.", room_id)
+        logger.info(f"Místnost s id={room_id} byla smazána.")
