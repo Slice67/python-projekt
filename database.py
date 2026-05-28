@@ -54,3 +54,24 @@ class Database:
                     description TEXT
                     )
                 """)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS events (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title TEXT NOT NULL,
+                    event_type TEXT NOT NULL,
+                    start_time TEXT NOT NULL,
+                    end_time TEXT NOT NULL,
+                    visitor_count INTEGER NOT NULL,
+                    client_id INTEGER NOT NULL,
+                    room_id INTEGER NOT NULL,
+                    staff_id INTEGER NOT NULL,
+                    program_id INTEGER NOT NULL,
+                    status TEXT NOT NULL,
+                    description TEXT,
+                    
+                    FOREIGN KEY (client_id) REFERENCES clients(id),
+                    FOREIGN KEY (room_id) REFERENCES rooms(id),
+                    FOREIGN KEY (staff_id) REFERENCES staff(id),
+                    FOREIGN KEY (program_id) REFERENCES programs(id)
+                    )
+                """)
