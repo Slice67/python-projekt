@@ -99,18 +99,16 @@ class EventRepository:
             description=row["description"]
         )
     
-    # -----------------------------------KOLIZE-----------------------------------------------------
+    # -----------------------------------KOLIZE S MÍSTNOSTÍ-----------------------------------------------------
     def has_room_conflict(self, room_id: int, start_time: datetime, end_time: datetime) -> bool:
         with self.database.connect() as conn:
             row = conn.execute("""
-                SELECT COUNT(*) as count
+                SELECT COUNT(*) AS count
                 FROM events
                 WHERE room_id = ?
-                AND (
-                    (start_time < ? AND end_time > ?) OR
-                    (start_time < ? AND end_time > ?) OR
-                    (start_time >= ? AND end_time <= ?)
-                )
+                    AND status != 'canceled'
+                    AND start_time < ?
+                    AND end_time > ?
                 """,
                 (room_id, 
                 end_time.isoformat(),
@@ -119,7 +117,7 @@ class EventRepository:
             
         return row["count"] > 0
     
-    # -----------------------------------KOLIZE-----------------------------------------------------
+    # -----------------------------------KOLIZE S ZAMĚSTNANCEM-----------------------------------------------------
     def has_staff_conflict(self, staff_id: int, start_time: datetime, end_time: datetime) -> bool:
         with self.database.connect() as conn:
             row = conn.execute("""
