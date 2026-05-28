@@ -43,3 +43,14 @@ try:
     staff_service.create_staff(bad_staff)
 except ValueError as error:
     print("Validace emailu funguje:", error)
+
+loaded_staff = staff_service.get_staff_by_id(staff_id)
+print("Načten zaměstnanec:", loaded_staff)
+
+staff_service.delete_staff(staff_id)
+print("Zaměstnanec smazán.")
+
+try:
+    staff_service.get_staff_by_id(staff_id)
+except ValueError as error:
+    print("Kontrola po smazání funguje:", error)
