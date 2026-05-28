@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Staff:
-    id: int
     name: str
-    role: str = ""
+    role: str
+    email: str | None = None
+    id: int | None = None

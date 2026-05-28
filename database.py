@@ -36,3 +36,11 @@ class Database:
                     description TEXT     
                     )    
                 """)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS staff (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    role TEXT NOT NULL,
+                    email TEXT
+                    )
+                """)
