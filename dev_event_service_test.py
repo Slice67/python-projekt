@@ -79,77 +79,70 @@ event = Event(
     description="Školní návštěva planetária.",
 )
 
-try:
-    too_large_event = Event(
-        title="Přeplněná návštěva",
-        event_type="school_visit",
-        start_time=datetime(2026, 6, 2, 10, 0),
-        end_time=datetime(2026, 6, 2, 11, 30),
-        visitor_count=100,
-        client_id=client_id,
-        room_id=room_id,
-        staff_id=staff_id,
-        program_id=program_id,
-        status="planned",
-    )
-    event_service.create_event(too_large_event)
-except ValueError as error:
-    print("Validace kapacity funguje:", error)
-
-
-try:
-    conflicting_event = Event(
-        title="Kolizní akce",
-        event_type="lecture",
-        start_time=datetime(2026, 6, 1, 10, 30),
-        end_time=datetime(2026, 6, 1, 11, 0),
-        visitor_count=20,
-        client_id=client_id,
-        room_id=room_id,
-        staff_id=staff_id,
-        program_id=program_id,
-        status="planned",
-    )
-    event_service.create_event(conflicting_event)
-except ValueError as error:
-    print("Validace kolize funguje:", error)
-
-try:
-    too_large_event = Event(
-        title="Přeplněná návštěva",
-        event_type="school_visit",
-        start_time=datetime(2026, 6, 2, 10, 0),
-        end_time=datetime(2026, 6, 2, 11, 30),
-        visitor_count=100,
-        client_id=client_id,
-        room_id=room_id,
-        staff_id=staff_id,
-        program_id=program_id,
-        status="planned",
-    )
-    event_service.create_event(too_large_event)
-except ValueError as error:
-    print("Validace kapacity funguje:", error)
-
-try:
-    conflicting_event = Event(
-        title="Kolizní akce",
-        event_type="lecture",
-        start_time=datetime(2026, 6, 1, 10, 30),
-        end_time=datetime(2026, 6, 1, 11, 0),
-        visitor_count=20,
-        client_id=client_id,
-        room_id=room_id,
-        staff_id=staff_id,
-        program_id=program_id,
-        status="planned",
-    )
-    event_service.create_event(conflicting_event)
-except ValueError as error:
-    print("Validace kolize funguje:", error)
-
 event_service.validate_event_basic(event)
 print("Základní validace validního eventu prošla.")
 
 event_service.validate_event_relations(event)
 print("Validace vazeb prošla.")
+
+event_service.validate_event_capacity(event)
+print("Validace kapacity prošla.")
+
+event_id = event_service.create_event(event)
+print("Event vytvořen přes service:", event_id)
+
+try:
+    too_large_event = Event(
+        title="Přeplněná návštěva",
+        event_type="school_visit",
+        start_time=datetime(2026, 6, 2, 10, 0),
+        end_time=datetime(2026, 6, 2, 11, 30),
+        visitor_count=100,
+        client_id=client_id,
+        room_id=room_id,
+        staff_id=staff_id,
+        program_id=program_id,
+        status="planned",
+    )
+    event_service.create_event(too_large_event)
+except ValueError as error:
+    print("Validace kapacity funguje:", error)
+
+try:
+    conflicting_event = Event(
+        title="Kolizní akce",
+        event_type="lecture",
+        start_time=datetime(2026, 6, 1, 10, 30),
+        end_time=datetime(2026, 6, 1, 11, 0),
+        visitor_count=20,
+        client_id=client_id,
+        room_id=room_id,
+        staff_id=staff_id,
+        program_id=program_id,
+        status="planned",
+    )
+    event_service.create_event(conflicting_event)
+except ValueError as error:
+    print("Validace kolize funguje:", error)
+
+non_conflicting_event = Event(
+    title="Nekolizní akce",
+    event_type="lecture",
+    start_time=datetime(2026, 6, 1, 12, 0),
+    end_time=datetime(2026, 6, 1, 13, 0),
+    visitor_count=20,
+    client_id=client_id,
+    room_id=room_id,
+    staff_id=staff_id,
+    program_id=program_id,
+    status="planned",
+)
+
+non_conflicting_event_id = event_service.create_event(non_conflicting_event)
+print("Nekolizní event vytvořen:", non_conflicting_event_id)
+
+loaded_event = event_service.get_event_by_id(event_id)
+print("Načten event:", loaded_event)
+
+event_service.delete_event(event_id)
+print("Event smazán.")
