@@ -100,37 +100,83 @@ class EventRepository:
         )
     
     # -----------------------------------KOLIZE S MÍSTNOSTÍ-----------------------------------------------------
-    def has_room_conflict(self, room_id: int, start_time: datetime, end_time: datetime) -> bool:
+    def has_room_conflict(self, room_id: int, start_time: datetime, end_time: datetime, ignored_event_id: int | None = None,) -> bool:
+        query = """
+            SELECT COUNT(*) AS count
+            FROM events
+            WHERE room_id = ?
+                AND status != 'canceled'
+                AND start_time < ?
+                AND end_time > ?
+        """
+        
+        params = [room_id,
+            end_time.isoformat(),
+            start_time.isoformat()
+        ]
+
+        if ignored_event_id is not None:
+            query += " AND id != ?"
+            params.append(ignored_event_id) # Pokud aktualizujeme existující akci, nechceme, aby se kontrolovala kolize s ní samotnou
+
         with self.database.connect() as conn:
-            row = conn.execute("""
-                SELECT COUNT(*) AS count
-                FROM events
-                WHERE room_id = ?
-                    AND status != 'canceled'
-                    AND start_time < ?
-                    AND end_time > ?
-                """,
-                (room_id, 
-                end_time.isoformat(),
-                start_time.isoformat(), 
-            )).fetchone()
+            row = conn.execute(query, params).fetchone()
             
         return row["count"] > 0
     
     # -----------------------------------KOLIZE S ZAMĚSTNANCEM-----------------------------------------------------
-    def has_staff_conflict(self, staff_id: int, start_time: datetime, end_time: datetime) -> bool:
+    def has_staff_conflict(self, staff_id: int, start_time: datetime, end_time: datetime, ignored_event_id: int | None = None) -> bool:
+        query = """
+            SELECT COUNT(*) AS count
+            FROM events
+            WHERE staff_id = ?
+                AND status != 'canceled'
+                AND start_time < ?
+                AND end_time > ?
+        """
+        
+        params = [staff_id,
+            end_time.isoformat(),
+            start_time.isoformat()
+        ]
+
+        if ignored_event_id is not None:
+            query += " AND id != ?"
+            params.append(ignored_event_id)
+
         with self.database.connect() as conn:
-            row = conn.execute("""
-                SELECT COUNT(*) AS count
-                FROM events
-                WHERE staff_id = ?
-                    AND status != 'canceled'
-                    AND start_time < ?
-                    AND end_time > ?
-                """, (
-                    staff_id,
-                    end_time.isoformat(),
-                    start_time.isoformat()
-                )).fetchone()
+            row = conn.execute(query, params).fetchone()
             
         return row["count"] > 0
+    
+    #-------------------------------------------UPDATE---------------------------------------------------------
+    def update_event(self, event: Event) -> None:
+        with self.database.connect() as conn:
+            conn.execute("""
+                UPDATE events
+                SET 
+                    title = ?, 
+                    event_type = ?, 
+                    start_time = ?, 
+                    end_time = ?, 
+                    visitor_count = ?, 
+                    client_id = ?, 
+                    room_id = ?, staff_id = ?, 
+                    program_id = ?, 
+                    status = ?, 
+                    description = ?
+                WHERE id = ?
+            """, (
+                event.title,
+                event.event_type,
+                event.start_time.isoformat(),
+                event.end_time.isoformat(),
+                event.visitor_count,
+                event.client_id,
+                event.room_id,
+                event.staff_id,
+                event.program_id,
+                event.status,
+                event.description,
+                event.id
+            ))
