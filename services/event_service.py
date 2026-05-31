@@ -2,7 +2,6 @@ import logging
 
 from models.events import Event
 from repositories.event_repository import EventRepository
-from services import client_service, program_service, room_service, staff_service
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ class EventService:
         "planned",
         "confirmed",
         "completed",
-        "canceled",
+        "cancelled",
     }
 
     def __init__(
