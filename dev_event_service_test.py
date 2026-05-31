@@ -108,25 +108,51 @@ try:
 except ValueError as error:
     print("Validace kapacity funguje:", error)
 
-try:
-    conflicting_event = Event(
-        title="Kolizní akce",
-        event_type="lecture",
-        start_time=datetime(2026, 6, 1, 10, 30),
-        end_time=datetime(2026, 6, 1, 11, 0),
-        visitor_count=20,
-        client_id=client_id,
-        room_id=room_id,
-        staff_id=staff_id,
-        program_id=program_id,
-        status="planned",
-    )
-    event_service.create_event(conflicting_event)
-except ValueError as error:
-    print("Validace kolize funguje:", error)
+# try:
+#     conflicting_event = Event(
+#         title="Kolizní akce",
+#         event_type="lecture",
+#         start_time=datetime(2026, 6, 1, 10, 30),
+#         end_time=datetime(2026, 6, 1, 11, 0),
+#         visitor_count=20,
+#         client_id=client_id,
+#         room_id=room_id,
+#         staff_id=staff_id,
+#         program_id=program_id,
+#         status="planned",
+#     )
+#     event_service.create_event(conflicting_event)
+# except ValueError as error:
+#     print("Validace kolize funguje:", error)
 
-non_conflicting_event = Event(
-    title="Nekolizní akce",
+# non_conflicting_event = Event(
+#     title="Nekolizní akce",
+#     event_type="lecture",
+#     start_time=datetime(2026, 6, 1, 12, 0),
+#     end_time=datetime(2026, 6, 1, 13, 0),
+#     visitor_count=20,
+#     client_id=client_id,
+#     room_id=room_id,
+#     staff_id=staff_id,
+#     program_id=program_id,
+#     status="planned",
+# )
+
+# non_conflicting_event_id = event_service.create_event(non_conflicting_event)
+# print("Nekolizní event vytvořen:", non_conflicting_event_id)
+
+loaded_event = event_service.get_event_by_id(event_id)
+print("Načten event:", loaded_event)
+
+
+loaded_event = event_service.get_event_by_id(event_id)
+loaded_event.title = "Upravená návštěva ZŠ Komenského"
+
+event_service.update_event(loaded_event)
+print("Update stejného eventu prošel.")
+
+second_event = Event(
+    title="Druhá nekolizní akce",
     event_type="lecture",
     start_time=datetime(2026, 6, 1, 12, 0),
     end_time=datetime(2026, 6, 1, 13, 0),
@@ -138,11 +164,13 @@ non_conflicting_event = Event(
     status="planned",
 )
 
-non_conflicting_event_id = event_service.create_event(non_conflicting_event)
-print("Nekolizní event vytvořen:", non_conflicting_event_id)
+second_event_id = event_service.create_event(second_event)
+second_loaded = event_service.get_event_by_id(second_event_id)
 
-loaded_event = event_service.get_event_by_id(event_id)
-print("Načten event:", loaded_event)
+try:
+    second_loaded.start_time = datetime(2026, 6, 1, 10, 30)
+    second_loaded.end_time = datetime(2026, 6, 1, 11, 0)
 
-event_service.delete_event(event_id)
-print("Event smazán.")
+    event_service.update_event(second_loaded)
+except ValueError as error:
+    print("Update kolize funguje:", error)

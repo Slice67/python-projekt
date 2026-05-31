@@ -72,20 +72,22 @@ class EventService:
         if event.visitor_count > room.capacity:
             raise ValueError(f"Kapacita místnosti {room.name} je {room.capacity}, ale akce má {event.visitor_count} návštěvníků.")
         
-    def validate_event_conflicts(self, event: Event) -> None:
+    def validate_event_conflicts(self, event: Event, ignored_event_id: int | None = None) -> None:
         """Ověří časové kolize místností a zaměstnance"""
         
         if self.event_repository.has_room_conflict(
             event.room_id,
             event.start_time,
-            event.end_time
+            event.end_time,
+            ignored_event_id=ignored_event_id,
         ):
             raise ValueError(f"Místnost {event.room_id} je v tomto čase už obsazená")
         
         if self.event_repository.has_staff_conflict(
             event.staff_id,
             event.start_time,
-            event.end_time
+            event.end_time,
+            ignored_event_id=ignored_event_id,
         ):
             raise ValueError(f"Zaměstnanec {event.staff_id} je v tomto čase už obsazený")
 
@@ -126,3 +128,20 @@ class EventService:
         self.event_repository.delete_event(event_id)
 
         logger.info("Akce s id=%d byla smazána.", event_id)
+
+    def update_event(self, event: Event) -> None:
+        """Upraví existující akci po validaci"""
+        
+        if event.id is None:
+            raise ValueError("ID akce nesmí být prázdné")
+        
+        self.get_event_by_id(event.id)
+
+        self.validate_event_basic(event)
+        self.validate_event_relations(event)
+        self.validate_event_capacity(event)
+        self.validate_event_conflicts(event, ignored_event_id=event.id)
+
+        self.event_repository.update_event(event)
+
+        logger.info("Akce s id=%d byla aktualizována.", event.id)
