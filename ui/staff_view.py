@@ -20,6 +20,7 @@ class StaffView(CrudTableFrame):
             on_refresh=self.refresh,
             on_add=self.open_add,
             on_delete=self.delete_selected,
+            on_edit=self.open_edit,
         )
 
     def refresh(self) -> None:
@@ -37,6 +38,20 @@ class StaffView(CrudTableFrame):
 
     def open_add(self) -> None:
         StaffFormWindow(self, self.staff_service, on_saved=self.refresh)
+
+    def open_edit(self) -> None:
+        selected_id = self.get_selected_id()
+        if selected_id is None:
+            show_no_selection_warning(self, "Upravit zaměstnance")
+            return
+
+        try:
+            staff = self.staff_service.get_staff_by_id(selected_id)
+        except ValueError as error:
+            messagebox.showerror("Chyba", str(error), parent=self)
+            return
+
+        StaffFormWindow(self, self.staff_service, on_saved=self.refresh, existing_item=staff)
 
     def delete_selected(self) -> None:
         selected_id = self.get_selected_id()

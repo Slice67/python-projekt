@@ -44,6 +44,7 @@ class MainWindow(Window):
             self.notebook,
             on_refresh=self.refresh_events,
             on_add=self.open_add_event_window,
+            on_edit=self.open_edit_event_window,
             on_delete=self.delete_selected_event,
             on_export=self.export_csv,
         )
@@ -86,6 +87,29 @@ class MainWindow(Window):
             self.program_service,
             self.event_service,
             on_saved=self.refresh_events,
+        )
+
+    def open_edit_event_window(self) -> None:
+        event_id = self.events_view.get_selected_event_id()
+        if event_id is None:
+            messagebox.showwarning("Upravit akci", "Vyberte prosím akci v tabulce.", parent=self)
+            return
+
+        try:
+            event = self.event_service.get_event_by_id(event_id)
+        except ValueError as error:
+            messagebox.showerror("Chyba", str(error), parent=self)
+            return
+
+        EventFormWindow(
+            self,
+            self.client_service,
+            self.room_service,
+            self.staff_service,
+            self.program_service,
+            self.event_service,
+            on_saved=self.refresh_events,
+            existing_event=event,
         )
 
     def delete_selected_event(self) -> None:

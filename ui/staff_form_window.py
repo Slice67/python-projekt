@@ -6,9 +6,10 @@ from models.staff import Staff
 
 
 class StaffFormWindow(Toplevel):
-    def __init__(self, master, staff_service, on_saved=None):
+    def __init__(self, master, staff_service, on_saved=None, existing_item: Staff | None = None):
         super().__init__(master)
-        self.title("Přidat zaměstnance")
+        self.existing_item = existing_item
+        self.title("Upravit zaměstnance" if self.existing_item is not None else "Přidat zaměstnance")
         self.resizable(False, False)
         self.staff_service = staff_service
         self.on_saved = on_saved
@@ -39,7 +40,15 @@ class StaffFormWindow(Toplevel):
         ttk.Button(button_row, text="Uložit", command=self.save_staff).pack(side="left")
         ttk.Button(button_row, text="Zrušit", command=self.destroy).pack(side="left", padx=(8, 0))
 
+        if self.existing_item is not None:
+            self._fill_existing_data()
+
         fields.columnconfigure(1, weight=1)
+
+    def _fill_existing_data(self) -> None:
+        self.name_var.set(self.existing_item.name)
+        self.role_var.set(self.existing_item.role)
+        self.email_var.set(self.existing_item.email or "")
 
     def _add_entry(self, parent, label: str, variable: StringVar, row: int) -> None:
         ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", pady=4)
@@ -51,8 +60,12 @@ class StaffFormWindow(Toplevel):
                 name=self.name_var.get().strip(),
                 role=self.role_var.get().strip(),
                 email=self._optional(self.email_var.get()),
+                id=self.existing_item.id if self.existing_item is not None else None,
             )
-            self.staff_service.create_staff(staff)
+            if self.existing_item is None:
+                self.staff_service.create_staff(staff)
+            else:
+                self.staff_service.update_staff(staff)
         except ValueError as error:
             messagebox.showerror("Chyba", str(error), parent=self)
             return

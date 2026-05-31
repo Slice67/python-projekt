@@ -6,9 +6,10 @@ from models.clients import Client
 
 
 class ClientFormWindow(Toplevel):
-    def __init__(self, master, client_service, on_saved=None):
+    def __init__(self, master, client_service, on_saved=None, existing_item: Client | None = None):
         super().__init__(master)
-        self.title("Přidat klienta")
+        self.existing_item = existing_item
+        self.title("Upravit klienta" if self.existing_item is not None else "Přidat klienta")
         self.resizable(False, False)
         self.client_service = client_service
         self.on_saved = on_saved
@@ -54,7 +55,21 @@ class ClientFormWindow(Toplevel):
         if self.client_service.ALLOWED_CLIENT_TYPES:
             self.client_type_var.set(sorted(self.client_service.ALLOWED_CLIENT_TYPES)[0])
 
+        if self.existing_item is not None:
+            self._fill_existing_data()
+
         fields.columnconfigure(1, weight=1)
+
+    def _fill_existing_data(self) -> None:
+        self.name_var.set(self.existing_item.name)
+        self.client_type_var.set(self.existing_item.client_type)
+        self.contact_person_var.set(self.existing_item.contact_person or "")
+        self.email_var.set(self.existing_item.email or "")
+        self.phone_var.set(self.existing_item.phone or "")
+        self.street_var.set(self.existing_item.street or "")
+        self.city_var.set(self.existing_item.city or "")
+        self.postal_code_var.set(self.existing_item.postal_code or "")
+        self.note_var.set(self.existing_item.note or "")
 
     def _add_entry(self, parent, label: str, variable: StringVar, row: int) -> None:
         ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", pady=4)
@@ -78,8 +93,12 @@ class ClientFormWindow(Toplevel):
                 city=self._optional(self.city_var.get()),
                 postal_code=self._optional(self.postal_code_var.get()),
                 note=self._optional(self.note_var.get()),
+                id=self.existing_item.id if self.existing_item is not None else None,
             )
-            self.client_service.create_client(client)
+            if self.existing_item is None:
+                self.client_service.create_client(client)
+            else:
+                self.client_service.update_client(client)
         except ValueError as error:
             messagebox.showerror("Chyba", str(error), parent=self)
             return

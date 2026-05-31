@@ -25,12 +25,14 @@ class CrudTableFrame(ttk.Frame):
         on_refresh: Callable[[], None],
         on_add: Callable[[], None],
         on_delete: Callable[[], None],
+        on_edit: Callable[[], None] | None = None,
     ):
         super().__init__(master, padding=12)
         self.columns = columns
         self.on_refresh = on_refresh
         self.on_add = on_add
         self.on_delete = on_delete
+        self.on_edit = on_edit
 
         self._build_toolbar()
         self._build_table()
@@ -41,6 +43,10 @@ class CrudTableFrame(ttk.Frame):
 
         ttk.Button(toolbar, text="Obnovit", command=self.on_refresh).pack(side="left")
         ttk.Button(toolbar, text="Přidat", command=self.on_add).pack(side="left", padx=(8, 0))
+
+        if self.on_edit is not None:
+            ttk.Button(toolbar, text="Upravit", command=self.on_edit).pack(side="left", padx=(8, 0))
+
         ttk.Button(toolbar, text="Smazat", command=self.on_delete).pack(side="left", padx=(8, 0))
 
     def _build_table(self) -> None:

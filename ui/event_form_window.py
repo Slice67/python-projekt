@@ -23,9 +23,11 @@ class EventFormWindow(Toplevel):
         program_service,
         event_service,
         on_saved=None,
+        existing_event: Event | None = None,
     ):
         super().__init__(master)
-        self.title("Přidat akci")
+        self.existing_event = existing_event
+        self.title("Upravit akci" if self.existing_event is not None else "Přidat akci")
         self.resizable(False, False)
 
         self.client_service = client_service
@@ -89,7 +91,11 @@ class EventFormWindow(Toplevel):
         ttk.Button(button_row, text="Uložit", command=self.save_event).pack(side="left")
         ttk.Button(button_row, text="Zrušit", command=self.destroy).pack(side="left", padx=(8, 0))
 
-        self._set_default_values()
+        if self.existing_event is None:
+            self._set_default_values()
+        else:
+            self._fill_existing_data()
+
         fields.columnconfigure(1, weight=1)
 
     def _set_default_values(self) -> None:
@@ -111,6 +117,20 @@ class EventFormWindow(Toplevel):
             self.staff_var.set(self._display_value(self._staff[0]))
         if self._programs:
             self.program_var.set(self._display_value(self._programs[0]))
+
+    def _fill_existing_data(self) -> None:
+        self.title_var.set(self.existing_event.title)
+        self.event_type_var.set(self.existing_event.event_type)
+        self.start_time_var.set(self.existing_event.start_time.strftime("%Y-%m-%d %H:%M"))
+        self.end_time_var.set(self.existing_event.end_time.strftime("%Y-%m-%d %H:%M"))
+        self.visitor_count_var.set(str(self.existing_event.visitor_count))
+        self.status_var.set(self.existing_event.status)
+        self.description_text.insert("1.0", self.existing_event.description or "")
+
+        self.client_var.set(self._choice_label(self.existing_event.client_id, self._client_map))
+        self.room_var.set(self._choice_label(self.existing_event.room_id, self._room_map))
+        self.staff_var.set(self._choice_label(self.existing_event.staff_id, self._staff_map))
+        self.program_var.set(self._choice_label(self.existing_event.program_id, self._program_map))
 
     def _add_entry(self, parent, label: str, variable: StringVar, row: int) -> None:
         ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", pady=4)
@@ -155,13 +175,21 @@ class EventFormWindow(Toplevel):
                 program_id=self._choice_id(self.program_var.get(), self._program_map, "program"),
                 status=self.status_var.get().strip(),
                 description=self._description_or_none(),
+                id=self.existing_event.id if self.existing_event is not None else None,
             )
-            event_id = self.event_service.create_event(event)
+
+            if self.existing_event is None:
+                event_id = self.event_service.create_event(event)
+                info_text = f"Akce byla uložena (ID {event_id})."
+            else:
+                self.event_service.update_event(event)
+                event_id = event.id
+                info_text = f"Akce byla aktualizována (ID {event_id})."
         except ValueError as error:
             messagebox.showerror("Chyba", str(error), parent=self)
             return
 
-        messagebox.showinfo("Uloženo", f"Akce byla uložena (ID {event_id}).", parent=self)
+        messagebox.showinfo("Uloženo", info_text, parent=self)
 
         if self.on_saved is not None:
             self.on_saved()
@@ -188,6 +216,13 @@ class EventFormWindow(Toplevel):
     def _description_or_none(self) -> str | None:
         description = self.description_text.get("1.0", "end").strip()
         return description or None
+
+    @staticmethod
+    def _choice_label(entity_id: int, mapping: dict[str, int]) -> str:
+        for label, mapped_id in mapping.items():
+            if mapped_id == entity_id:
+                return label
+        return str(entity_id)
 
     @staticmethod
     def _display_value(entity) -> str:

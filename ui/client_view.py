@@ -22,6 +22,7 @@ class ClientView(CrudTableFrame):
             on_refresh=self.refresh,
             on_add=self.open_add,
             on_delete=self.delete_selected,
+            on_edit=self.open_edit,
         )
 
     def refresh(self) -> None:
@@ -41,6 +42,20 @@ class ClientView(CrudTableFrame):
 
     def open_add(self) -> None:
         ClientFormWindow(self, self.client_service, on_saved=self.refresh)
+
+    def open_edit(self) -> None:
+        selected_id = self.get_selected_id()
+        if selected_id is None:
+            show_no_selection_warning(self, "Upravit klienta")
+            return
+
+        try:
+            client = self.client_service.get_client_by_id(selected_id)
+        except ValueError as error:
+            messagebox.showerror("Chyba", str(error), parent=self)
+            return
+
+        ClientFormWindow(self, self.client_service, on_saved=self.refresh, existing_item=client)
 
     def delete_selected(self) -> None:
         selected_id = self.get_selected_id()

@@ -29,12 +29,14 @@ class EventsView(ttk.Frame):
         master,
         on_refresh: Callable[[], None],
         on_add: Callable[[], None],
+        on_edit: Callable[[], None] | None,
         on_delete: Callable[[], None],
         on_export: Callable[[], None],
     ):
         super().__init__(master, padding=12)
         self.on_refresh = on_refresh
         self.on_add = on_add
+        self.on_edit = on_edit
         self.on_delete = on_delete
         self.on_export = on_export
 
@@ -47,6 +49,10 @@ class EventsView(ttk.Frame):
 
         ttk.Button(toolbar, text="Obnovit", command=self.on_refresh).pack(side="left")
         ttk.Button(toolbar, text="Přidat akci", command=self.on_add).pack(side="left", padx=(8, 0))
+
+        if self.on_edit is not None:
+            ttk.Button(toolbar, text="Upravit akci", command=self.on_edit).pack(side="left", padx=(8, 0))
+
         ttk.Button(toolbar, text="Smazat akci", command=self.on_delete).pack(side="left", padx=(8, 0))
         ttk.Button(toolbar, text="Export CSV", command=self.on_export).pack(side="left", padx=(8, 0))
 

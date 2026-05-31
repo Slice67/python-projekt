@@ -22,6 +22,7 @@ class ProgramView(CrudTableFrame):
             on_refresh=self.refresh,
             on_add=self.open_add,
             on_delete=self.delete_selected,
+            on_edit=self.open_edit,
         )
 
     def refresh(self) -> None:
@@ -41,6 +42,20 @@ class ProgramView(CrudTableFrame):
 
     def open_add(self) -> None:
         ProgramFormWindow(self, self.program_service, on_saved=self.refresh)
+
+    def open_edit(self) -> None:
+        selected_id = self.get_selected_id()
+        if selected_id is None:
+            show_no_selection_warning(self, "Upravit program")
+            return
+
+        try:
+            program = self.program_service.get_program_by_id(selected_id)
+        except ValueError as error:
+            messagebox.showerror("Chyba", str(error), parent=self)
+            return
+
+        ProgramFormWindow(self, self.program_service, on_saved=self.refresh, existing_item=program)
 
     def delete_selected(self) -> None:
         selected_id = self.get_selected_id()

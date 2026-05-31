@@ -6,9 +6,10 @@ from models.programs import Program
 
 
 class ProgramFormWindow(Toplevel):
-    def __init__(self, master, program_service, on_saved=None):
+    def __init__(self, master, program_service, on_saved=None, existing_item: Program | None = None):
         super().__init__(master)
-        self.title("Přidat program")
+        self.existing_item = existing_item
+        self.title("Upravit program" if self.existing_item is not None else "Přidat program")
         self.resizable(False, False)
         self.program_service = program_service
         self.on_saved = on_saved
@@ -46,7 +47,17 @@ class ProgramFormWindow(Toplevel):
         if self.program_service.ALLOWED_PROGRAM_TYPES:
             self.program_type_var.set(sorted(self.program_service.ALLOWED_PROGRAM_TYPES)[0])
 
+        if self.existing_item is not None:
+            self._fill_existing_data()
+
         fields.columnconfigure(1, weight=1)
+
+    def _fill_existing_data(self) -> None:
+        self.name_var.set(self.existing_item.name)
+        self.program_type_var.set(self.existing_item.program_type)
+        self.duration_minutes_var.set(str(self.existing_item.duration_minutes))
+        self.recommended_age_var.set(self.existing_item.recommended_age or "")
+        self.description_var.set(self.existing_item.description or "")
 
     def _add_entry(self, parent, label: str, variable: StringVar, row: int) -> None:
         ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", pady=4)
@@ -66,8 +77,12 @@ class ProgramFormWindow(Toplevel):
                 duration_minutes=int(self.duration_minutes_var.get().strip()),
                 recommended_age=self._optional(self.recommended_age_var.get()),
                 description=self._optional(self.description_var.get()),
+                id=self.existing_item.id if self.existing_item is not None else None,
             )
-            self.program_service.create_program(program)
+            if self.existing_item is None:
+                self.program_service.create_program(program)
+            else:
+                self.program_service.update_program(program)
         except ValueError as error:
             messagebox.showerror("Chyba", str(error), parent=self)
             return

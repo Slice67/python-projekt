@@ -6,9 +6,10 @@ from models.room import Room
 
 
 class RoomFormWindow(Toplevel):
-    def __init__(self, master, room_service, on_saved=None):
+    def __init__(self, master, room_service, on_saved=None, existing_item: Room | None = None):
         super().__init__(master)
-        self.title("Přidat místnost")
+        self.existing_item = existing_item
+        self.title("Upravit místnost" if self.existing_item is not None else "Přidat místnost")
         self.resizable(False, False)
         self.room_service = room_service
         self.on_saved = on_saved
@@ -39,7 +40,15 @@ class RoomFormWindow(Toplevel):
         ttk.Button(button_row, text="Uložit", command=self.save_room).pack(side="left")
         ttk.Button(button_row, text="Zrušit", command=self.destroy).pack(side="left", padx=(8, 0))
 
+        if self.existing_item is not None:
+            self._fill_existing_data()
+
         fields.columnconfigure(1, weight=1)
+
+    def _fill_existing_data(self) -> None:
+        self.name_var.set(self.existing_item.name)
+        self.capacity_var.set(str(self.existing_item.capacity))
+        self.description_var.set(self.existing_item.description or "")
 
     def _add_entry(self, parent, label: str, variable: StringVar, row: int) -> None:
         ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", pady=4)
@@ -51,8 +60,12 @@ class RoomFormWindow(Toplevel):
                 name=self.name_var.get().strip(),
                 capacity=int(self.capacity_var.get().strip()),
                 description=self._optional(self.description_var.get()),
+                id=self.existing_item.id if self.existing_item is not None else None,
             )
-            self.room_service.create_room(room)
+            if self.existing_item is None:
+                self.room_service.create_room(room)
+            else:
+                self.room_service.update_room(room)
         except ValueError as error:
             messagebox.showerror("Chyba", str(error), parent=self)
             return
