@@ -49,3 +49,15 @@ class ProgramService:
         self.program_repository.delete_program(program_id)
 
         logger.info(f"Program s id={program_id} byl smazán.")
+
+    def update_program(self, program: Program) -> None:
+        """Zvaliduje program a aktualizuje ho přes repository"""
+
+        if program.id is None:
+            raise ValueError("ID programu je povinné.")
+
+        self.get_program_by_id(program.id)
+        self.validate_program(program)
+        self.program_repository.update_program(program)
+
+        logger.info("Program aktualizován | id=%d name=%s", program.id, program.name)

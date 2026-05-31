@@ -48,3 +48,15 @@ class ClientService:
         self.client_repository.delete_client(client_id)
 
         logger.info("Klient s id=%d byl smazán.", client_id)
+
+    def update_client(self, client: Client) -> None:
+        """Zvaliduje klienta a aktualizuje ho přes repository"""
+
+        if client.id is None:
+            raise ValueError("ID klienta je povinné.")
+
+        self.get_client_by_id(client.id)
+        self.validate_client(client)
+        self.client_repository.update_client(client)
+
+        logger.info("Klient aktualizován | id=%d name=%s", client.id, client.name)

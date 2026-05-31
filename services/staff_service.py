@@ -47,3 +47,15 @@ class StaffService:
         self.staff_repository.delete_staff(staff_id)
 
         logger.info("Zaměstnanec s id=%d byl smazán.", staff_id)
+
+    def update_staff(self, staff: Staff) -> None:
+        """Zvaliduje zaměstnance a aktualizuje ho přes repository"""
+
+        if staff.id is None:
+            raise ValueError("ID zaměstnance je povinné.")
+
+        self.get_staff_by_id(staff.id)
+        self.validate_staff(staff)
+        self.staff_repository.update_staff(staff)
+
+        logger.info("Zaměstnanec aktualizován | id=%d name=%s", staff.id, staff.name)

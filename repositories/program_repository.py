@@ -73,3 +73,19 @@ class ProgramRepository:
             recommended_age=row["recommended_age"],
             description=row["description"]
         )
+
+    #-------------------------------------------UPDATE---------------------------------------------------------
+    def update_program(self, program: Program) -> None:
+        with self.database.connect() as conn:
+            conn.execute("""
+                UPDATE programs
+                SET name = ?, program_type = ?, duration_minutes = ?, recommended_age = ?, description = ?
+                WHERE id = ?
+            """, (
+                program.name,
+                program.program_type,
+                program.duration_minutes,
+                program.recommended_age,
+                program.description,
+                program.id,
+            ))

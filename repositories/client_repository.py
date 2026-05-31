@@ -101,3 +101,23 @@ class ClientRepository:
             postal_code=row["postal_code"],
             note=row["note"]
         )
+
+    # -------------------------------------------UPDATE---------------------------------------------------------
+    def update_client(self, client: Client) -> None:
+        with self.database.connect() as conn:
+            conn.execute("""
+                UPDATE clients
+                SET name = ?, client_type = ?, contact_person = ?, email = ?, phone = ?, street = ?, city = ?, postal_code = ?, note = ?
+                WHERE id = ?
+            """, (
+                client.name,
+                client.client_type,
+                client.contact_person,
+                client.email,
+                client.phone,
+                client.street,
+                client.city,
+                client.postal_code,
+                client.note,
+                client.id,
+            ))

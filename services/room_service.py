@@ -44,3 +44,14 @@ class RoomService:
         self.room_repository.delete_room(room_id)
 
         logger.info(f"Místnost s id={room_id} byla smazána.")
+
+    def update_room(self, room: Room) -> None:
+        if room.id is None:
+            raise ValueError("ID místnosti je povinné")
+        
+        self.get_room_by_id(room.id)
+        self.validate_room(room)
+
+        self.room_repository.update_room(room)
+
+        logger.info("Místnost aktualizována | id=%d name=%s", room.id, room.name)

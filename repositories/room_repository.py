@@ -67,3 +67,17 @@ class RoomRepository:
             capacity=row["capacity"],
             description=row["description"]
         )
+    
+    #-------------------------------------------UPDATE---------------------------------------------------------
+    def update_room(self, room: Room) -> None:
+        with self.database.connect() as conn:
+            conn.execute("""
+                UPDATE rooms
+                SET name = ?, capacity = ?, description = ?
+                WHERE id = ?
+            """, (
+                room.name,
+                room.capacity,
+                room.description,
+                room.id
+            ))

@@ -66,3 +66,17 @@ class StaffRepository:
             role=row["role"],
             email=row["email"]
         )
+
+    #-------------------------------------------UPDATE---------------------------------------------------------
+    def update_staff(self, staff: Staff) -> None:
+        with self.database.connect() as conn:
+            conn.execute("""
+                UPDATE staff
+                SET name = ?, role = ?, email = ?
+                WHERE id = ?
+            """, (
+                staff.name,
+                staff.role,
+                staff.email,
+                staff.id,
+            ))
