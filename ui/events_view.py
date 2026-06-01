@@ -83,28 +83,60 @@ class EventsView(ttk.Frame):
         }
 
         widths = {
-            "id": 60,
-            "title": 220,
-            "event_type": 150,
-            "start_time": 150,
-            "end_time": 150,
-            "visitor_count": 110,
-            "client": 180,
-            "room": 170,
-            "staff": 170,
-            "program": 180,
-            "status": 110,
+            "id": 45,
+            "title": 170,
+            "event_type": 125,
+            "start_time": 125,
+            "end_time": 125,
+            "visitor_count": 90,
+            "client": 170,
+            "room": 140,
+            "staff": 150,
+            "program": 170,
+            "status": 90,
+        }
+
+        anchors = {
+            "id": "center",
+            "title": "w",
+            "event_type": "w",
+            "start_time": "center",
+            "end_time": "center",
+            "visitor_count": "center",
+            "client": "w",
+            "room": "w",
+            "staff": "w",
+            "program": "w",
+            "status": "center",
         }
 
         for column in self.COLUMNS:
             self.tree.heading(column, text=headings[column])
-            self.tree.column(column, width=widths[column], anchor="w", stretch=True)
+            self.tree.column(
+                column,
+                width=widths[column],
+                minwidth=widths[column],
+                anchor=anchors[column],
+                stretch=True,
+            )
 
-        scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscrollcommand=scrollbar.set)
+        self.tree.tag_configure("evenrow", background="#f8f9fa")
+        self.tree.tag_configure("oddrow", background="#ffffff")
 
-        self.tree.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
+        y_scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
+        x_scrollbar = ttk.Scrollbar(table_frame, orient="horizontal", command=self.tree.xview)
+
+        self.tree.configure(
+            yscrollcommand=y_scrollbar.set,
+            xscrollcommand=x_scrollbar.set,
+        )
+
+        table_frame.rowconfigure(0, weight=1)
+        table_frame.columnconfigure(0, weight=1)
+
+        self.tree.grid(row=0, column=0, sticky="nsew")
+        y_scrollbar.grid(row=0, column=1, sticky="ns")
+        x_scrollbar.grid(row=1, column=0, sticky="ew")
 
     def get_selected_event_id(self) -> int | None:
         selection = self.tree.selection()
@@ -127,7 +159,9 @@ class EventsView(ttk.Frame):
         for item in self.tree.get_children():
             self.tree.delete(item)
 
-        for event in events:
+        for index, event in enumerate(events):
+            row_tag = "evenrow" if index % 2 == 0 else "oddrow"
+
             self.tree.insert(
                 "",
                 "end",
@@ -145,8 +179,9 @@ class EventsView(ttk.Frame):
                     self._label(event.program_id, program_names),
                     event.status,
                 ),
+                tags=(row_tag,),
             )
-
+            
     @staticmethod
     def _label(entity_id: int, names: dict[int, str]) -> str:
         return names.get(entity_id, str(entity_id))

@@ -1,1 +1,2 @@
 id;title;event_type;start_time;end_time;visitor_count;client_id;room_id;staff_id;program_id;status;description
+5;Demo akce 5;public_observation;2030-01-05 09:00:00;2030-01-05 10:30:00;30;8;4;5;1;planned;Seed data pro demonstraci aplikace.

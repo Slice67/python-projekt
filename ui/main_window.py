@@ -27,8 +27,13 @@ class MainWindow(Window):
     ):
         super().__init__(themename="flatly")
         self.title("Observatory Event Manager")
-        self.geometry("1280x720")
-        self.minsize(1100, 600)
+        self.geometry("1400x800")
+        self.minsize(1200, 650)
+
+        try:
+            self.state("zoomed")
+        except Exception:
+            pass
 
         self.client_service = client_service
         self.room_service = room_service

@@ -16,7 +16,7 @@ class CrudColumn:
 
 
 class CrudTableFrame(ttk.Frame):
-    """Reusable table with refresh/add/delete actions."""
+    """Reusable table with refresh/add/delete/edit actions."""
 
     def __init__(
         self,
