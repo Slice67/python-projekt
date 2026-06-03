@@ -37,7 +37,13 @@ export_service = ExportService()
 
 events = event_service.list_events()
 
-file_path = export_service.export_events_to_csv(events)
+file_path = export_service.export_events_to_csv(
+    events,
+    client_names={client.id: client.name for client in client_service.list_clients() if client.id is not None},
+    room_names={room.id: room.name for room in room_service.list_rooms() if room.id is not None},
+    staff_names={staff.id: staff.name for staff in staff_service.list_staff() if staff.id is not None},
+    program_names={program.id: program.name for program in program_service.list_programs() if program.id is not None},
+)
 
 print(f"Export hotový: {file_path}")
 print(f"Počet exportovaných akcí: {len(events)}")

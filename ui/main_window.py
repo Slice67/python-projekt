@@ -167,7 +167,13 @@ class MainWindow(Window):
     def export_csv(self) -> None:
         try:
             events = self.event_service.list_events()
-            file_path = self.export_service.export_events_to_csv(events)
+            file_path = self.export_service.export_events_to_csv(
+                events,
+                client_names=self._name_map(self.client_service.list_clients()),
+                room_names=self._name_map(self.room_service.list_rooms()),
+                staff_names=self._name_map(self.staff_service.list_staff()),
+                program_names=self._name_map(self.program_service.list_programs()),
+            )
         except OSError as error:
             messagebox.showerror("Export CSV", f"Export se nepodařil uložit:\n{error}", parent=self)
             return
