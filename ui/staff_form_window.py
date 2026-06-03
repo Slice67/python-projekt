@@ -1,65 +1,48 @@
 from __future__ import annotations
 
-from tkinter import StringVar, Toplevel, messagebox, ttk
+from tkinter import StringVar, messagebox
 
 from models.staff import Staff
+from ui.form_window import BaseFormWindow
 
 
-class StaffFormWindow(Toplevel):
+class StaffFormWindow(BaseFormWindow):
     def __init__(self, master, staff_service, on_saved=None, existing_item: Staff | None = None):
-        super().__init__(master)
         self.existing_item = existing_item
-        self.title("Upravit zaměstnance" if self.existing_item is not None else "Přidat zaměstnance")
-        self.resizable(False, False)
         self.staff_service = staff_service
-        self.on_saved = on_saved
+        title = "Upravit zaměstnance" if self.existing_item is not None else "Přidat zaměstnance"
+
+        super().__init__(master, title, on_saved)
 
         self.name_var = StringVar()
         self.role_var = StringVar()
         self.email_var = StringVar()
 
         self._build_form()
-        self.transient(master)
-        self.grab_set()
-        self.focus_set()
 
     def _build_form(self) -> None:
-        container = ttk.Frame(self, padding=16)
-        container.grid(row=0, column=0, sticky="nsew")
-
-        fields = ttk.Frame(container)
-        fields.grid(row=0, column=0, sticky="nsew")
-
-        self._add_entry(fields, "Jméno", self.name_var, 0)
-        self._add_entry(fields, "Role", self.role_var, 1)
-        self._add_entry(fields, "Email", self.email_var, 2)
-
-        button_row = ttk.Frame(container)
-        button_row.grid(row=1, column=0, sticky="e", pady=(12, 0))
-
-        ttk.Button(button_row, text="Uložit", command=self.save_staff).pack(side="left")
-        ttk.Button(button_row, text="Zrušit", command=self.destroy).pack(side="left", padx=(8, 0))
+        self.add_entry("Jméno", self.name_var, 0)
+        self.add_entry("Role", self.role_var, 1)
+        self.add_entry("Email", self.email_var, 2)
+        self.add_buttons(self.save_staff)
 
         if self.existing_item is not None:
             self._fill_existing_data()
-
-        fields.columnconfigure(1, weight=1)
 
     def _fill_existing_data(self) -> None:
         self.name_var.set(self.existing_item.name)
         self.role_var.set(self.existing_item.role)
         self.email_var.set(self.existing_item.email or "")
 
-    def _add_entry(self, parent, label: str, variable: StringVar, row: int) -> None:
-        ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", pady=4)
-        ttk.Entry(parent, textvariable=variable, width=40).grid(row=row, column=1, sticky="ew", pady=4)
-
     def save_staff(self) -> None:
+        if not self._validate_form():
+            return
+
         try:
             staff = Staff(
                 name=self.name_var.get().strip(),
                 role=self.role_var.get().strip(),
-                email=self._optional(self.email_var.get()),
+                email=self.optional(self.email_var.get()),
                 id=self.existing_item.id if self.existing_item is not None else None,
             )
             if self.existing_item is None:
@@ -70,11 +53,12 @@ class StaffFormWindow(Toplevel):
             messagebox.showerror("Chyba", str(error), parent=self)
             return
 
-        if self.on_saved is not None:
-            self.on_saved()
+        self.notify_saved()
         self.destroy()
 
-    @staticmethod
-    def _optional(value: str) -> str | None:
-        value = value.strip()
-        return value or None
+    def _validate_form(self) -> bool:
+        return (
+            self.validate_required("Jméno", self.name_var.get())
+            and self.validate_required("Role", self.role_var.get())
+            and self.validate_email("Email", self.email_var.get())
+        )

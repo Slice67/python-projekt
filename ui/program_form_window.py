@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-from tkinter import StringVar, Toplevel, messagebox, ttk
+from tkinter import StringVar, messagebox
 
 from models.programs import Program
+from ui.form_window import BaseFormWindow
 
 
-class ProgramFormWindow(Toplevel):
+class ProgramFormWindow(BaseFormWindow):
     def __init__(self, master, program_service, on_saved=None, existing_item: Program | None = None):
-        super().__init__(master)
         self.existing_item = existing_item
-        self.title("Upravit program" if self.existing_item is not None else "Přidat program")
-        self.resizable(False, False)
         self.program_service = program_service
-        self.on_saved = on_saved
+        title = "Upravit program" if self.existing_item is not None else "Přidat program"
+
+        super().__init__(master, title, on_saved)
 
         self.name_var = StringVar()
         self.program_type_var = StringVar()
@@ -21,36 +21,20 @@ class ProgramFormWindow(Toplevel):
         self.description_var = StringVar()
 
         self._build_form()
-        self.transient(master)
-        self.grab_set()
-        self.focus_set()
 
     def _build_form(self) -> None:
-        container = ttk.Frame(self, padding=16)
-        container.grid(row=0, column=0, sticky="nsew")
-
-        fields = ttk.Frame(container)
-        fields.grid(row=0, column=0, sticky="nsew")
-
-        self._add_entry(fields, "Název", self.name_var, 0)
-        self._add_combobox(fields, "Typ programu", self.program_type_var, sorted(self.program_service.ALLOWED_PROGRAM_TYPES), 1)
-        self._add_entry(fields, "Délka (min)", self.duration_minutes_var, 2)
-        self._add_entry(fields, "Doporučený věk", self.recommended_age_var, 3)
-        self._add_entry(fields, "Popis", self.description_var, 4)
-
-        button_row = ttk.Frame(container)
-        button_row.grid(row=1, column=0, sticky="e", pady=(12, 0))
-
-        ttk.Button(button_row, text="Uložit", command=self.save_program).pack(side="left")
-        ttk.Button(button_row, text="Zrušit", command=self.destroy).pack(side="left", padx=(8, 0))
+        self.add_entry("Název", self.name_var, 0)
+        self.add_combobox("Typ programu", self.program_type_var, sorted(self.program_service.ALLOWED_PROGRAM_TYPES), 1)
+        self.add_entry("Délka (min)", self.duration_minutes_var, 2)
+        self.add_entry("Doporučený věk", self.recommended_age_var, 3)
+        self.add_entry("Popis", self.description_var, 4)
+        self.add_buttons(self.save_program)
 
         if self.program_service.ALLOWED_PROGRAM_TYPES:
             self.program_type_var.set(sorted(self.program_service.ALLOWED_PROGRAM_TYPES)[0])
 
         if self.existing_item is not None:
             self._fill_existing_data()
-
-        fields.columnconfigure(1, weight=1)
 
     def _fill_existing_data(self) -> None:
         self.name_var.set(self.existing_item.name)
@@ -59,24 +43,17 @@ class ProgramFormWindow(Toplevel):
         self.recommended_age_var.set(self.existing_item.recommended_age or "")
         self.description_var.set(self.existing_item.description or "")
 
-    def _add_entry(self, parent, label: str, variable: StringVar, row: int) -> None:
-        ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", pady=4)
-        ttk.Entry(parent, textvariable=variable, width=40).grid(row=row, column=1, sticky="ew", pady=4)
-
-    def _add_combobox(self, parent, label: str, variable: StringVar, values, row: int) -> None:
-        ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", pady=4)
-        ttk.Combobox(parent, textvariable=variable, values=list(values), state="readonly", width=38).grid(
-            row=row, column=1, sticky="ew", pady=4
-        )
-
     def save_program(self) -> None:
+        if not self._validate_form():
+            return
+
         try:
             program = Program(
                 name=self.name_var.get().strip(),
                 program_type=self.program_type_var.get().strip(),
                 duration_minutes=int(self.duration_minutes_var.get().strip()),
-                recommended_age=self._optional(self.recommended_age_var.get()),
-                description=self._optional(self.description_var.get()),
+                recommended_age=self.optional(self.recommended_age_var.get()),
+                description=self.optional(self.description_var.get()),
                 id=self.existing_item.id if self.existing_item is not None else None,
             )
             if self.existing_item is None:
@@ -87,11 +64,12 @@ class ProgramFormWindow(Toplevel):
             messagebox.showerror("Chyba", str(error), parent=self)
             return
 
-        if self.on_saved is not None:
-            self.on_saved()
+        self.notify_saved()
         self.destroy()
 
-    @staticmethod
-    def _optional(value: str) -> str | None:
-        value = value.strip()
-        return value or None
+    def _validate_form(self) -> bool:
+        return (
+            self.validate_required("Název", self.name_var.get())
+            and self.validate_required("Typ programu", self.program_type_var.get())
+            and self.validate_int("Délka (min)", self.duration_minutes_var.get(), minimum=1)
+        )

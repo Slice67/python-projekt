@@ -2,17 +2,18 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from tkinter import Text, StringVar, Toplevel, messagebox, ttk
+from tkinter import StringVar, messagebox
 
 from models.clients import Client
 from models.events import Event
 from models.programs import Program
 from models.room import Room
 from models.staff import Staff
+from ui.form_window import BaseFormWindow
 
 
-class EventFormWindow(Toplevel):
-    """Dialog pro vytvoření nové akce."""
+class EventFormWindow(BaseFormWindow):
+    """Dialog pro vytvoření nebo úpravu akce."""
 
     def __init__(
         self,
@@ -25,17 +26,15 @@ class EventFormWindow(Toplevel):
         on_saved=None,
         existing_event: Event | None = None,
     ):
-        super().__init__(master)
         self.existing_event = existing_event
-        self.title("Upravit akci" if self.existing_event is not None else "Přidat akci")
-        self.resizable(False, False)
-
         self.client_service = client_service
         self.room_service = room_service
         self.staff_service = staff_service
         self.program_service = program_service
         self.event_service = event_service
-        self.on_saved = on_saved
+        title = "Upravit akci" if self.existing_event is not None else "Přidat akci"
+
+        super().__init__(master, title, on_saved)
 
         self._clients = self.client_service.list_clients()
         self._rooms = self.room_service.list_rooms()
@@ -46,18 +45,6 @@ class EventFormWindow(Toplevel):
         self._room_map = self._build_choice_map(self._rooms, "name")
         self._staff_map = self._build_choice_map(self._staff, "name")
         self._program_map = self._build_choice_map(self._programs, "name")
-
-        self._build_form()
-        self.transient(master)
-        self.grab_set()
-        self.focus_set()
-
-    def _build_form(self) -> None:
-        container = ttk.Frame(self, padding=16)
-        container.grid(row=0, column=0, sticky="nsew")
-
-        fields = ttk.Frame(container)
-        fields.grid(row=0, column=0, sticky="nsew")
 
         self.title_var = StringVar()
         self.event_type_var = StringVar()
@@ -70,33 +57,26 @@ class EventFormWindow(Toplevel):
         self.program_var = StringVar()
         self.status_var = StringVar(value="planned")
 
-        self._add_entry(fields, "Název", self.title_var, 0)
-        self._add_combobox(fields, "Typ akce", self.event_type_var, sorted(self.event_service.ALLOWED_EVENT_TYPES), 1)
-        self._add_entry(fields, "Začátek (YYYY-MM-DD HH:MM)", self.start_time_var, 2)
-        self._add_entry(fields, "Konec (YYYY-MM-DD HH:MM)", self.end_time_var, 3)
-        self._add_entry(fields, "Počet návštěvníků", self.visitor_count_var, 4)
-        self._add_combobox(fields, "Klient", self.client_var, list(self._client_map.keys()), 5, self._client_map)
-        self._add_combobox(fields, "Místnost", self.room_var, list(self._room_map.keys()), 6, self._room_map)
-        self._add_combobox(fields, "Zaměstnanec", self.staff_var, list(self._staff_map.keys()), 7, self._staff_map)
-        self._add_combobox(fields, "Program", self.program_var, list(self._program_map.keys()), 8, self._program_map)
-        self._add_combobox(fields, "Status", self.status_var, sorted(self.event_service.ALLOWED_STATUSES), 9)
+        self._build_form()
 
-        ttk.Label(fields, text="Popis").grid(row=10, column=0, sticky="w", pady=(8, 4))
-        self.description_text = Text(fields, width=48, height=5, wrap="word")
-        self.description_text.grid(row=10, column=1, sticky="ew", pady=(8, 4))
-
-        button_row = ttk.Frame(container)
-        button_row.grid(row=1, column=0, sticky="e", pady=(12, 0))
-
-        ttk.Button(button_row, text="Uložit", command=self.save_event).pack(side="left")
-        ttk.Button(button_row, text="Zrušit", command=self.destroy).pack(side="left", padx=(8, 0))
+    def _build_form(self) -> None:
+        self.add_entry("Název", self.title_var, 0)
+        self.add_combobox("Typ akce", self.event_type_var, sorted(self.event_service.ALLOWED_EVENT_TYPES), 1)
+        self.add_entry("Začátek (YYYY-MM-DD HH:MM)", self.start_time_var, 2)
+        self.add_entry("Konec (YYYY-MM-DD HH:MM)", self.end_time_var, 3)
+        self.add_entry("Počet návštěvníků", self.visitor_count_var, 4)
+        self.add_combobox("Klient", self.client_var, self._client_map.keys(), 5)
+        self.add_combobox("Místnost", self.room_var, self._room_map.keys(), 6)
+        self.add_combobox("Zaměstnanec", self.staff_var, self._staff_map.keys(), 7)
+        self.add_combobox("Program", self.program_var, self._program_map.keys(), 8)
+        self.add_combobox("Status", self.status_var, sorted(self.event_service.ALLOWED_STATUSES), 9)
+        self.description_text = self.add_text("Popis", 10)
+        self.add_buttons(self.save_event)
 
         if self.existing_event is None:
             self._set_default_values()
         else:
             self._fill_existing_data()
-
-        fields.columnconfigure(1, weight=1)
 
     def _set_default_values(self) -> None:
         start = datetime.now().replace(second=0, microsecond=0)
@@ -132,36 +112,10 @@ class EventFormWindow(Toplevel):
         self.staff_var.set(self._choice_label(self.existing_event.staff_id, self._staff_map))
         self.program_var.set(self._choice_label(self.existing_event.program_id, self._program_map))
 
-    def _add_entry(self, parent, label: str, variable: StringVar, row: int) -> None:
-        ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", pady=4)
-        ttk.Entry(parent, textvariable=variable, width=40).grid(row=row, column=1, sticky="ew", pady=4)
-
-    def _add_combobox(
-        self,
-        parent,
-        label: str,
-        variable: StringVar,
-        values,
-        row: int,
-        mapping: dict[str, int] | None = None,
-    ) -> None:
-        ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", pady=4)
-
-        if mapping is None:
-            options = list(values)
-        else:
-            options = list(mapping.keys())
-
-        combobox = ttk.Combobox(
-            parent,
-            textvariable=variable,
-            values=options,
-            state="readonly",
-            width=38,
-        )
-        combobox.grid(row=row, column=1, sticky="ew", pady=4)
-
     def save_event(self) -> None:
+        if not self._validate_form():
+            return
+
         try:
             event = Event(
                 title=self.title_var.get().strip(),
@@ -190,11 +144,31 @@ class EventFormWindow(Toplevel):
             return
 
         messagebox.showinfo("Uloženo", info_text, parent=self)
-
-        if self.on_saved is not None:
-            self.on_saved()
-
+        self.notify_saved()
         self.destroy()
+
+    def _validate_form(self) -> bool:
+        if not (
+            self.validate_required("Název", self.title_var.get())
+            and self.validate_required("Typ akce", self.event_type_var.get())
+            and self.validate_datetime("Začátek", self.start_time_var.get())
+            and self.validate_datetime("Konec", self.end_time_var.get())
+            and self.validate_int("Počet návštěvníků", self.visitor_count_var.get(), minimum=0)
+            and self.validate_required("Klient", self.client_var.get())
+            and self.validate_required("Místnost", self.room_var.get())
+            and self.validate_required("Zaměstnanec", self.staff_var.get())
+            and self.validate_required("Program", self.program_var.get())
+            and self.validate_required("Status", self.status_var.get())
+        ):
+            return False
+
+        start_time = datetime.strptime(self.start_time_var.get().strip(), "%Y-%m-%d %H:%M")
+        end_time = datetime.strptime(self.end_time_var.get().strip(), "%Y-%m-%d %H:%M")
+        if end_time <= start_time:
+            messagebox.showwarning("Validace", "Konec akce musí být později než začátek.", parent=self)
+            return False
+
+        return True
 
     def _choice_id(self, value: str, mapping: dict[str, int], label: str) -> int:
         if not value:
