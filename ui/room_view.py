@@ -12,15 +12,19 @@ class RoomView(CrudTableFrame):
         super().__init__(
             master,
             columns=[
-                CrudColumn("id", "ID", 60),
-                CrudColumn("name", "Název", 240),
-                CrudColumn("capacity", "Kapacita", 100),
-                CrudColumn("description", "Popis", 320),
+                CrudColumn("id", "ID", 60, anchor="center"),
+                CrudColumn("name", "Název", 240, anchor="center"),
+                CrudColumn("capacity", "Kapacita", 100, anchor="center"),
+                CrudColumn("description", "Popis", 320, anchor="center"),
             ],
             on_refresh=self.refresh,
             on_add=self.open_add,
             on_delete=self.delete_selected,
             on_edit=self.open_edit,
+            add_label="Přidat místnost",
+            edit_label="Upravit místnost",
+            delete_label="Smazat místnost",
+            striped_rows=True,
         )
 
     def refresh(self) -> None:

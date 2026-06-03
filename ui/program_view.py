@@ -12,17 +12,21 @@ class ProgramView(CrudTableFrame):
         super().__init__(
             master,
             columns=[
-                CrudColumn("id", "ID", 60),
-                CrudColumn("name", "Název", 240),
-                CrudColumn("program_type", "Typ", 140),
-                CrudColumn("duration_minutes", "Délka (min)", 110),
-                CrudColumn("recommended_age", "Věk", 100),
+                CrudColumn("id", "ID", 60, anchor="center"),
+                CrudColumn("name", "Název", 240, anchor="center"),
+                CrudColumn("program_type", "Typ", 140, anchor="center"),
+                CrudColumn("duration_minutes", "Délka (min)", 110, anchor="center"),
+                CrudColumn("recommended_age", "Věk", 100, anchor="center"),
                 CrudColumn("description", "Popis", 320),
             ],
             on_refresh=self.refresh,
             on_add=self.open_add,
             on_delete=self.delete_selected,
             on_edit=self.open_edit,
+            add_label="Přidat program",
+            edit_label="Upravit program",
+            delete_label="Smazat program",
+            striped_rows=True,
         )
 
     def refresh(self) -> None:

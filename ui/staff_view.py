@@ -12,15 +12,19 @@ class StaffView(CrudTableFrame):
         super().__init__(
             master,
             columns=[
-                CrudColumn("id", "ID", 60),
-                CrudColumn("name", "Jméno", 220),
-                CrudColumn("role", "Role", 180),
-                CrudColumn("email", "Email", 240),
+                CrudColumn("id", "ID", 60, anchor="center"),
+                CrudColumn("name", "Jméno", 220, anchor="center"),
+                CrudColumn("role", "Role", 180, anchor="center"),
+                CrudColumn("email", "Email", 240, anchor="center"),
             ],
             on_refresh=self.refresh,
             on_add=self.open_add,
             on_delete=self.delete_selected,
             on_edit=self.open_edit,
+            add_label="Přidat zaměstnance",
+            edit_label="Upravit zaměstnance",
+            delete_label="Smazat zaměstnance",
+            striped_rows=True,
         )
 
     def refresh(self) -> None:

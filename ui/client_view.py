@@ -6,23 +6,27 @@ from ui.client_form_window import ClientFormWindow
 from ui.crud_widgets import CrudColumn, CrudTableFrame, show_no_selection_warning
 
 
-class ClientView(CrudTableFrame):
+class ClientView(CrudTableFrame): # Dědí z CrudTableFrame, který poskytuje základní funkce pro tabulku s CRUD operacemi
     def __init__(self, master, client_service):
         self.client_service = client_service
         super().__init__(
             master,
             columns=[
-                CrudColumn("id", "ID", 60),
-                CrudColumn("name", "Název", 220),
-                CrudColumn("client_type", "Typ", 120),
-                CrudColumn("contact_person", "Kontaktní osoba", 180),
-                CrudColumn("email", "Email", 200),
-                CrudColumn("phone", "Telefon", 130),
+                CrudColumn("id", "ID", 60, anchor="center"),
+                CrudColumn("name", "Název", 220, anchor="center"),
+                CrudColumn("client_type", "Typ", 120, anchor="center"),
+                CrudColumn("contact_person", "Kontaktní osoba", 180, anchor="center"),
+                CrudColumn("email", "Email", 200, anchor="center"),
+                CrudColumn("phone", "Telefon", 30, anchor="center"),
             ],
             on_refresh=self.refresh,
             on_add=self.open_add,
             on_delete=self.delete_selected,
             on_edit=self.open_edit,
+            add_label="Přidat klienta",
+            edit_label="Upravit klienta",
+            delete_label="Smazat klienta",
+            striped_rows=True,
         )
 
     def refresh(self) -> None:
