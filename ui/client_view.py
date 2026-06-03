@@ -67,6 +67,9 @@ class ClientView(CrudTableFrame): # Dědí z CrudTableFrame, který poskytuje z�
             show_no_selection_warning(self, "Smazat klienta")
             return
 
+        if not messagebox.askyesno("Smazat klienta", f"Opravdu chcete smazat klienta s ID {selected_id}?", parent=self):
+            return
+
         try:
             self.client_service.delete_client(selected_id)
         except ValueError as error:

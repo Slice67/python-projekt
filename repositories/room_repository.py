@@ -50,6 +50,16 @@ class RoomRepository:
                 WHERE id = ?
             """, (room_id,))
 
+    def is_room_used(self, room_id: int) -> bool:
+        with self.database.connect() as conn:
+            row = conn.execute("""
+                SELECT COUNT(*) AS count
+                FROM events
+                WHERE room_id = ?
+            """, (room_id,)).fetchone()
+
+        return row["count"] > 0
+
     # -------------------------------------------GET BY ID---------------------------------------------------------
     def get_room_by_id(self, room_id: int) -> Room | None:
         with self.database.connect() as conn:

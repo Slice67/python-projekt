@@ -49,6 +49,16 @@ class StaffRepository:
                 WHERE id = ?
             """, (staff_id,))
 
+    def is_staff_used(self, staff_id: int) -> bool:
+        with self.database.connect() as conn:
+            row = conn.execute("""
+                SELECT COUNT(*) AS count
+                FROM events
+                WHERE staff_id = ?
+            """, (staff_id,)).fetchone()
+
+        return row["count"] > 0
+
     # -------------------------------------------GET BY ID---------------------------------------------------------
     def get_staff_by_id(self, staff_id: int) -> Staff | None:
         with self.database.connect() as conn:

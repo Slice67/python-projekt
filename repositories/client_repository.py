@@ -79,6 +79,16 @@ class ClientRepository:
                 """,
                 (client_id,)) # Tuple s jedním prvkem musí mít čárku
 
+    def is_client_used(self, client_id: int) -> bool:
+        with self.database.connect() as conn:
+            row = conn.execute("""
+                SELECT COUNT(*) AS count
+                FROM events
+                WHERE client_id = ?
+            """, (client_id,)).fetchone()
+
+        return row["count"] > 0
+
     # -------------------------------------------GET BY ID---------------------------------------------------------
     def get_client_by_id(self, client_id: int) -> Client | None: # Vrátí klienta podle ID nebo None pokud neexistuje
         with self.database.connect() as conn:

@@ -63,6 +63,9 @@ class RoomView(CrudTableFrame):
             show_no_selection_warning(self, "Smazat místnost")
             return
 
+        if not messagebox.askyesno("Smazat místnost", f"Opravdu chcete smazat místnost s ID {selected_id}?", parent=self):
+            return
+
         try:
             self.room_service.delete_room(selected_id)
         except ValueError as error:

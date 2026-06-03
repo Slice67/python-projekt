@@ -45,6 +45,9 @@ class ClientService:
     def delete_client(self, client_id: int) -> None:
         """Smaže klienta podle ID, pokud existuje"""
         self.get_client_by_id(client_id)
+        if self.client_repository.is_client_used(client_id):
+            raise ValueError("Klienta nelze smazat, protože je přiřazený k existující akci.")
+
         self.client_repository.delete_client(client_id)
 
         logger.info("Klient s id=%d byl smazán.", client_id)

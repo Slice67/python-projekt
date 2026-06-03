@@ -54,6 +54,16 @@ class ProgramRepository:
                 WHERE id = ?
             """, (program_id,))
 
+    def is_program_used(self, program_id: int) -> bool:
+        with self.database.connect() as conn:
+            row = conn.execute("""
+                SELECT COUNT(*) AS count
+                FROM events
+                WHERE program_id = ?
+            """, (program_id,)).fetchone()
+
+        return row["count"] > 0
+
     # -------------------------------------------GET BY ID---------------------------------------------------------
     def get_program_by_id(self, program_id: int) -> Program | None:
         with self.database.connect() as conn:

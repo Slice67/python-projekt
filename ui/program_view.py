@@ -67,6 +67,9 @@ class ProgramView(CrudTableFrame):
             show_no_selection_warning(self, "Smazat program")
             return
 
+        if not messagebox.askyesno("Smazat program", f"Opravdu chcete smazat program s ID {selected_id}?", parent=self):
+            return
+
         try:
             self.program_service.delete_program(selected_id)
         except ValueError as error:

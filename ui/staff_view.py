@@ -63,6 +63,9 @@ class StaffView(CrudTableFrame):
             show_no_selection_warning(self, "Smazat zaměstnance")
             return
 
+        if not messagebox.askyesno("Smazat zaměstnance", f"Opravdu chcete smazat zaměstnance s ID {selected_id}?", parent=self):
+            return
+
         try:
             self.staff_service.delete_staff(selected_id)
         except ValueError as error:

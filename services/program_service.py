@@ -46,6 +46,9 @@ class ProgramService:
     def delete_program(self, program_id: int) -> None:
         """Smaže program podle ID, pokud existuje"""
         self.get_program_by_id(program_id)
+        if self.program_repository.is_program_used(program_id):
+            raise ValueError("Program nelze smazat, protože je přiřazený k existující akci.")
+
         self.program_repository.delete_program(program_id)
 
         logger.info(f"Program s id={program_id} byl smazán.")

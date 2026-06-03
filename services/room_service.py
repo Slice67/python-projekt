@@ -41,6 +41,9 @@ class RoomService:
     def delete_room(self, room_id: int) -> None:
         """Smaže místnost podle ID, pokud existuje"""
         self.get_room_by_id(room_id)
+        if self.room_repository.is_room_used(room_id):
+            raise ValueError("Místnost nelze smazat, protože je přiřazená k existující akci.")
+
         self.room_repository.delete_room(room_id)
 
         logger.info(f"Místnost s id={room_id} byla smazána.")

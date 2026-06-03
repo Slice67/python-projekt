@@ -44,6 +44,9 @@ class StaffService:
     def delete_staff(self, staff_id: int) -> None:
         """Smaže zaměstnance podle ID, pokud existuje"""
         self.get_staff_by_id(staff_id)
+        if self.staff_repository.is_staff_used(staff_id):
+            raise ValueError("Zaměstnance nelze smazat, protože je přiřazený k existující akci.")
+
         self.staff_repository.delete_staff(staff_id)
 
         logger.info("Zaměstnanec s id=%d byl smazán.", staff_id)
