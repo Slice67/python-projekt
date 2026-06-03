@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Callable
 
 from models.events import Event
@@ -31,6 +32,7 @@ class EventsView(CrudTableFrame):
         on_edit: Callable[[], None] | None,
         on_delete: Callable[[], None],
         on_export: Callable[[], None],
+        on_mark_completed: Callable[[], None],
     ):
         super().__init__(
             master,
@@ -42,7 +44,10 @@ class EventsView(CrudTableFrame):
             add_label="Přidat akci",
             edit_label="Upravit akci",
             delete_label="Smazat akci",
-            extra_actions=[CrudAction("Export CSV", on_export)],
+            extra_actions=[
+                CrudAction("Označit dokončeno", on_mark_completed),
+                CrudAction("Export CSV", on_export),
+            ],
             horizontal_scrollbar=True,
             striped_rows=True,
         )
@@ -70,11 +75,31 @@ class EventsView(CrudTableFrame):
                 "room": self._label(event.room_id, room_names),
                 "staff": self._label(event.staff_id, staff_names),
                 "program": self._label(event.program_id, program_names),
-                "status": event.status,
+                "status": self._status_label(event.status),
+                "_tag": self._row_tag(event),
             }
             for event in events
         ])
 
+    # staticmethod, je dekorátor, který označuje, že metoda _row_tag nevyužívá žádné atributy ani metody třídy a může být volána bez vytvoření instance třídy.
+    @staticmethod 
+    def _row_tag(event: Event) -> str | None:
+        if event.end_time < datetime.now() and event.status in {"planned", "confirmed"}:
+            return "overdue"
+
+        return None
+
     @staticmethod
     def _label(entity_id: int, names: dict[int, str]) -> str:
         return names.get(entity_id, str(entity_id))
+
+    # _status_label je statická metoda, která převádí interní status akce (např. "planned", "confirmed") na uživatelsky přívětivý text (např. "Naplánovaná", "Potvrzená"). Používá slovník pro mapování a vrací původní status jako fallback, pokud není nalezen v mapě.
+    @staticmethod
+    def _status_label(status: str) -> str:
+        labels = {
+            "planned": "Naplánovaná",
+            "confirmed": "Potvrzená",
+            "completed": "Dokončená",
+            "cancelled": "Zrušená",
+        }
+        return labels.get(status, status)

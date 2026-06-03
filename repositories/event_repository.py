@@ -105,7 +105,7 @@ class EventRepository:
             SELECT COUNT(*) AS count
             FROM events
             WHERE room_id = ?
-                AND status != 'canceled'
+                AND status != 'cancelled'
                 AND start_time < ?
                 AND end_time > ?
         """
@@ -130,7 +130,7 @@ class EventRepository:
             SELECT COUNT(*) AS count
             FROM events
             WHERE staff_id = ?
-                AND status != 'canceled'
+                AND status != 'cancelled'
                 AND start_time < ?
                 AND end_time > ?
         """

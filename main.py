@@ -88,10 +88,26 @@ def seed_demo_data(
     programs = program_service.list_programs()
     events = event_service.list_events()
 
-    base_start = datetime(2030, 1, 1, 9, 0)
+    base_start = datetime.now().replace(hour=9, minute=0, second=0, microsecond=0) - timedelta(days=6)
     event_types = sorted(event_service.ALLOWED_EVENT_TYPES)
+    statuses = [
+        "completed",
+        "completed",
+        "completed",
+        "confirmed",
+        "planned",
+        "cancelled",
+        "completed",
+        "planned",
+        "confirmed",
+        "planned",
+        "completed",
+        "confirmed",
+        "planned",
+        "cancelled",
+    ]
 
-    for index in range(len(events), 5):
+    for index in range(len(events), 14):
         start_time = base_start + timedelta(days=index)
         end_time = start_time + timedelta(minutes=90)
         room = rooms[index % len(rooms)]
@@ -106,7 +122,7 @@ def seed_demo_data(
             room_id=room.id,
             staff_id=staff_members[index % len(staff_members)].id,
             program_id=programs[index % len(programs)].id,
-            status="planned",
+            status=statuses[index % len(statuses)],
             description="Seed data pro demonstraci aplikace.",
         )
         event_service.create_event(event)
